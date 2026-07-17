@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Strangr — Anonim mesaj gönder</title>
+  <meta name="robots" content="noindex" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0b0b0f; color: #f2f2f7;
+      min-height: 100vh; min-height: 100dvh;
+      display: flex; align-items: center; justify-content: center; padding: 20px;
+    }
+    .card {
+      width: 100%; max-width: 420px; background: #17171d;
+      border: 1px solid #26262e; border-radius: 20px; padding: 28px 22px;
+      text-align: center;
+    }
+    .brand { font-size: 14px; font-weight: 800; letter-spacing: 2px; color: #b8aeff; margin-bottom: 22px; }
+    .avatar {
+      width: 76px; height: 76px; border-radius: 50%; object-fit: cover;
+      background: #26262e; margin: 0 auto 12px; display: block;
+    }
+    h1 { font-size: 19px; font-weight: 800; margin-bottom: 4px; }
+    .sub { color: #9a9aa5; font-size: 13px; margin-bottom: 20px; line-height: 1.5; }
+    textarea {
+      width: 100%; min-height: 120px; resize: vertical;
+      background: #0b0b0f; color: #f2f2f7; border: 1px solid #26262e;
+      border-radius: 14px; padding: 14px; font-size: 15px; font-family: inherit;
+      outline: none;
+    }
+    textarea:focus { border-color: #7c6bf2; }
+    .count { text-align: right; color: #55555f; font-size: 11px; margin: 6px 2px 14px; }
+    button {
+      width: 100%; background: #7c6bf2; color: #fff; border: 0; border-radius: 14px;
+      padding: 15px; font-size: 16px; font-weight: 700; cursor: pointer;
+    }
+    button:disabled { opacity: 0.5; cursor: default; }
+    .hint { color: #55555f; font-size: 11px; margin-top: 14px; line-height: 1.5; }
+    .error { color: #ff6b6b; font-size: 14px; margin-top: 12px; }
+    .done h2 { font-size: 20px; margin-bottom: 8px; }
+    .done p { color: #9a9aa5; font-size: 14px; line-height: 1.6; margin-bottom: 20px; }
+    .store {
+      display: inline-block; background: #24243a; color: #b8aeff; text-decoration: none;
+      border: 1px solid #7c6bf2; border-radius: 14px; padding: 13px 22px;
+      font-size: 15px; font-weight: 700;
+    }
+    .again { margin-top: 16px; background: none; border: 0; color: #9a9aa5; font-size: 13px; text-decoration: underline; width: auto; padding: 4px; }
+    .hidden { display: none; }
+    .spin {
+      width: 26px; height: 26px; border: 3px solid #26262e; border-top-color: #7c6bf2;
+      border-radius: 50%; margin: 30px auto; animation: r 0.8s linear infinite;
+    }
+    @keyframes r { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="brand">STRANGR</div>
+
+    <div id="loading"><div class="spin"></div></div>
+
+    <div id="notfound" class="hidden">
+      <h1>Link bulunamadı</h1>
+      <p class="sub">Bu anonim mesaj linki geçersiz ya da kapatılmış.</p>
+    </div>
+
+    <div id="form" class="hidden">
+      <img id="avatar" class="avatar" alt="" />
+      <h1 id="nickname"></h1>
+      <p class="sub">Sana anonim bir mesaj bırakabilirsin.<br />Kim olduğun asla görünmez.</p>
+      <textarea id="text" maxlength="500" placeholder="Mesajını yaz..."></textarea>
+      <div class="count"><span id="count">0</span>/500</div>
+      <button id="send">Anonim Gönder</button>
+      <div id="error" class="error hidden"></div>
+      <p class="hint">Gönderdiğin mesaj tamamen anonimdir. Hakaret, tehdit ve yasa dışı içerik moderasyona bildirilebilir.</p>
+    </div>
+
+    <div id="done" class="done hidden">
+      <h2>📮 İletildi!</h2>
+      <p>Mesajın anonim olarak ulaştı.<br />Cevap alabilmek ve kendi anonim linkini oluşturmak için Strangr'ı indir.</p>
+      <a class="store" id="storeLink" href="https://play.google.com/store/apps/details?id=com.anonconnect.app">Google Play'den İndir</a>
+      <br />
+      <button class="again" id="again">Bir mesaj daha gönder</button>
+    </div>
+  </div>
+
+  <script>
+    var FN = 'https://tvjlvufrpcdceydlccvb.supabase.co/functions/v1/anon-inbox';
+    var slug = decodeURIComponent((location.hash || '').replace(/^#\/?/, ''));
+
+    var el = function (id) { return document.getElementById(id); };
+    function show(id) {
+      ['loading', 'notfound', 'form', 'done'].forEach(function (s) {
+        el(s).classList.toggle('hidden', s !== id);
+      });
+    }
+
+    if (!slug) { show('notfound'); }
+    else {
+      fetch(FN + '?slug=' + encodeURIComponent(slug))
+        .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
+        .then(function (p) {
+          el('nickname').textContent = p.nickname;
+          if (p.photo_url) el('avatar').src = p.photo_url;
+          else el('avatar').removeAttribute('src');
+          show('form');
+        })
+        .catch(function () { show('notfound'); });
+    }
+
+    el('text').addEventListener('input', function () {
+      el('count').textContent = String(el('text').value.length);
+    });
+
+    el('send').addEventListener('click', function () {
+      var text = el('text').value.trim();
+      if (!text) return;
+      el('send').disabled = true;
+      el('error').classList.add('hidden');
+      fetch(FN, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug: slug, text: text }),
+      })
+        .then(function (r) {
+          if (r.ok) { el('text').value = ''; el('count').textContent = '0'; show('done'); }
+          else if (r.status === 429) throw new Error('Çok sık mesaj gönderdin, biraz sonra tekrar dene.');
+          else throw new Error('Gönderilemedi, tekrar dene.');
+        })
+        .catch(function (e) {
+          el('error').textContent = e.message || 'Gönderilemedi, tekrar dene.';
+          el('error').classList.remove('hidden');
+        })
+        .finally(function () { el('send').disabled = false; });
+    });
+
+    el('again').addEventListener('click', function () { show('form'); });
+  </script>
+</body>
+</html>

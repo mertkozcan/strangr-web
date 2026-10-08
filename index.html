@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="tr">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Strangr — Anonim mesaj gönder</title>
+  <title>Strangr — Send an anonymous message</title>
   <meta name="robots" content="noindex" />
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -54,6 +54,17 @@
       border-radius: 50%; margin: 30px auto; animation: r 0.8s linear infinite;
     }
     @keyframes r { to { transform: rotate(360deg); } }
+    .repliesLink {
+      display: block; text-align: center; color: #7c6bf2; font-size: 12px;
+      font-weight: 700; text-decoration: none; margin-top: 16px;
+    }
+    .repliesList { text-align: left; margin-top: 18px; display: flex; flex-direction: column; gap: 12px; }
+    .replyRow { background: #0b0b0f; border: 1px solid #26262e; border-radius: 14px; padding: 14px; }
+    .sentText { color: #f2f2f7; font-size: 14px; line-height: 1.5; }
+    .replyBox { margin-top: 10px; padding-top: 10px; border-top: 1px solid #26262e; }
+    .replyLabel { color: #b8aeff; font-size: 11px; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .replyText { color: #f2f2f7; font-size: 14px; line-height: 1.5; }
+    .pending { color: #55555f; font-size: 12px; margin-top: 10px; }
   </style>
 </head>
 <body>
@@ -63,43 +74,186 @@
     <div id="loading"><div class="spin"></div></div>
 
     <div id="notfound" class="hidden">
-      <h1>Link bulunamadı</h1>
-      <p class="sub">Bu anonim mesaj linki geçersiz ya da kapatılmış.</p>
+      <h1 data-i18n="notFoundTitle"></h1>
+      <p class="sub" data-i18n="notFoundBody"></p>
     </div>
 
     <div id="form" class="hidden">
       <img id="avatar" class="avatar" alt="" />
       <h1 id="nickname"></h1>
-      <p class="sub">Sana anonim bir mesaj bırakabilirsin.<br />Kim olduğun asla görünmez.</p>
-      <textarea id="text" maxlength="500" placeholder="Mesajını yaz..."></textarea>
+      <p class="sub" data-i18n-html="formSub"></p>
+      <textarea id="text" maxlength="500" data-i18n-placeholder="placeholder"></textarea>
       <div class="count"><span id="count">0</span>/500</div>
-      <button id="send">Anonim Gönder</button>
+      <button id="send" data-i18n="send"></button>
       <div id="error" class="error hidden"></div>
-      <p class="hint">Gönderdiğin mesaj tamamen anonimdir. Hakaret, tehdit ve yasa dışı içerik moderasyona bildirilebilir.</p>
+      <p class="hint" data-i18n="hint"></p>
+      <a class="repliesLink" href="#r" data-i18n="myMessagesLink"></a>
     </div>
 
     <div id="done" class="done hidden">
-      <h2>📮 İletildi!</h2>
-      <p>Mesajın anonim olarak ulaştı.<br />Cevap alabilmek ve kendi anonim linkini oluşturmak için Strangr'ı indir.</p>
-      <a class="store" id="storeLink" href="https://play.google.com/store/apps/details?id=com.anonconnect.app">Google Play'den İndir</a>
+      <h2 data-i18n="doneTitle"></h2>
+      <p data-i18n-html="doneBody"></p>
+      <button class="store" id="viewReplies" style="border:0;" data-i18n="waitReply"></button>
       <br />
-      <button class="again" id="again">Bir mesaj daha gönder</button>
+      <button class="again" id="again" data-i18n="again"></button>
+      <br />
+      <a class="repliesLink" href="https://play.google.com/store/apps/details?id=com.anonconnect.app" data-i18n="download"></a>
+    </div>
+
+    <div id="replies" class="hidden">
+      <h1 data-i18n="repliesTitle"></h1>
+      <p class="sub" data-i18n="repliesSub"></p>
+      <div id="repliesList"></div>
+      <a class="repliesLink" href="#" id="backLink" data-i18n="back"></a>
     </div>
   </div>
 
   <script>
+    // Turkish for Turkish browsers, English for everyone else.
+    var LANG = ((navigator.language || navigator.userLanguage || 'en') + '').toLowerCase().indexOf('tr') === 0 ? 'tr' : 'en';
+    var STRINGS = {
+      tr: {
+        title: 'Strangr — Anonim mesaj gönder',
+        notFoundTitle: 'Link bulunamadı',
+        notFoundBody: 'Bu anonim mesaj linki geçersiz ya da kapatılmış.',
+        formSub: 'Sana anonim bir mesaj bırakabilirsin.<br />Kim olduğun asla görünmez.',
+        placeholder: 'Mesajını yaz...',
+        send: 'Anonim Gönder',
+        hint: 'Gönderdiğin mesaj tamamen anonimdir. Hakaret, tehdit ve yasa dışı içerik moderasyona bildirilebilir.',
+        myMessagesLink: 'Daha önce gönderdiğim mesajlar →',
+        doneTitle: '📮 İletildi!',
+        doneBody: 'Mesajın anonim olarak ulaştı.<br />Cevap gelirse bu sayfadan (aynı tarayıcıda) görebilirsin — hesap açmana gerek yok.',
+        waitReply: 'Cevabımı Bekle',
+        again: 'Bir mesaj daha gönder',
+        download: "Strangr'ı indir, kendi anonim linkini oluştur →",
+        repliesTitle: 'Gönderdiğim Mesajlar',
+        repliesSub: 'Bu tarayıcıdan gönderdiğin mesajlar ve cevapları (varsa) — kimliğin hiçbir zaman görünmez.',
+        back: '← Yeni mesaj gönder',
+        noneSent: 'Bu tarayıcıdan henüz mesaj göndermedin.',
+        loading: 'Yükleniyor...',
+        noReply: 'Henüz cevap yok',
+        replyLabel: 'CEVAP',
+        rateLimited: 'Çok sık mesaj gönderdin, biraz sonra tekrar dene.',
+        sendFailed: 'Gönderilemedi, tekrar dene.'
+      },
+      en: {
+        title: 'Strangr — Send an anonymous message',
+        notFoundTitle: 'Link not found',
+        notFoundBody: 'This anonymous message link is invalid or has been turned off.',
+        formSub: 'You can leave them an anonymous message.<br />Who you are is never shown.',
+        placeholder: 'Write your message...',
+        send: 'Send Anonymously',
+        hint: 'Your message is completely anonymous. Harassment, threats and illegal content can be reported to moderation.',
+        myMessagesLink: 'Messages I sent before →',
+        doneTitle: '📮 Delivered!',
+        doneBody: "Your message arrived anonymously.<br />If they reply, you'll see it on this page (in the same browser) — no account needed.",
+        waitReply: 'Wait for My Reply',
+        again: 'Send another message',
+        download: 'Get Strangr and create your own anonymous link →',
+        repliesTitle: 'Messages I Sent',
+        repliesSub: 'Messages you sent from this browser and their replies (if any) — your identity is never shown.',
+        back: '← Send a new message',
+        noneSent: "You haven't sent any messages from this browser yet.",
+        loading: 'Loading...',
+        noReply: 'No reply yet',
+        replyLabel: 'REPLY',
+        rateLimited: "You're sending messages too fast, try again in a bit.",
+        sendFailed: "Couldn't send, please try again."
+      }
+    };
+    function tr(key) { return STRINGS[LANG][key]; }
+    document.documentElement.lang = LANG;
+    document.title = tr('title');
+    Array.prototype.forEach.call(document.querySelectorAll('[data-i18n]'), function (n) { n.textContent = tr(n.getAttribute('data-i18n')); });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-i18n-html]'), function (n) { n.innerHTML = tr(n.getAttribute('data-i18n-html')); });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-i18n-placeholder]'), function (n) { n.placeholder = tr(n.getAttribute('data-i18n-placeholder')); });
+
     var FN = 'https://tvjlvufrpcdceydlccvb.supabase.co/functions/v1/anon-inbox';
-    var slug = decodeURIComponent((location.hash || '').replace(/^#\/?/, ''));
+    var STORAGE_KEY = 'strangr_sent_v1';
+    var hash = (location.hash || '').replace(/^#\/?/, '');
+    var slug = decodeURIComponent(hash);
 
     var el = function (id) { return document.getElementById(id); };
     function show(id) {
-      ['loading', 'notfound', 'form', 'done'].forEach(function (s) {
+      ['loading', 'notfound', 'form', 'done', 'replies'].forEach(function (s) {
         el(s).classList.toggle('hidden', s !== id);
       });
     }
 
-    if (!slug) { show('notfound'); }
-    else {
+    function loadSent() {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+      catch (e) { return []; }
+    }
+    function saveSent(list) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(list.slice(0, 50)));
+    }
+    function rememberSent(token, text) {
+      var list = loadSent();
+      list.unshift({ token: token, text: text, sentAt: Date.now() });
+      saveSent(list);
+    }
+
+    function renderReplies() {
+      var list = loadSent();
+      var container = el('repliesList');
+      container.innerHTML = '';
+      if (!list.length) {
+        var p = document.createElement('p');
+        p.className = 'sub';
+        p.textContent = tr('noneSent');
+        container.appendChild(p);
+        return;
+      }
+      var wrap = document.createElement('div');
+      wrap.className = 'repliesList';
+      container.appendChild(wrap);
+      list.forEach(function (item) {
+        var row = document.createElement('div');
+        row.className = 'replyRow';
+        var sentP = document.createElement('p');
+        sentP.className = 'sentText';
+        sentP.textContent = item.text;
+        row.appendChild(sentP);
+        var pendingP = document.createElement('p');
+        pendingP.className = 'pending';
+        pendingP.textContent = tr('loading');
+        row.appendChild(pendingP);
+        wrap.appendChild(row);
+
+        fetch(FN + '?token=' + encodeURIComponent(item.token))
+          .then(function (r) { return r.ok ? r.json() : null; })
+          .then(function (d) {
+            if (d && d.reply_text) {
+              pendingP.remove();
+              var box = document.createElement('div');
+              box.className = 'replyBox';
+              var label = document.createElement('div');
+              label.className = 'replyLabel';
+              label.textContent = tr('replyLabel');
+              var text = document.createElement('p');
+              text.className = 'replyText';
+              text.textContent = d.reply_text;
+              box.appendChild(label);
+              box.appendChild(text);
+              row.appendChild(box);
+            } else {
+              pendingP.textContent = tr('noReply');
+            }
+          })
+          .catch(function () {
+            pendingP.textContent = tr('noReply');
+          });
+      });
+    }
+
+    window.addEventListener('hashchange', function () { location.reload(); });
+
+    if (hash === 'r') {
+      show('replies');
+      renderReplies();
+    } else if (!slug) {
+      show('notfound');
+    } else {
       fetch(FN + '?slug=' + encodeURIComponent(slug))
         .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
         .then(function (p) {
@@ -126,18 +280,26 @@
         body: JSON.stringify({ slug: slug, text: text }),
       })
         .then(function (r) {
-          if (r.ok) { el('text').value = ''; el('count').textContent = '0'; show('done'); }
-          else if (r.status === 429) throw new Error('Çok sık mesaj gönderdin, biraz sonra tekrar dene.');
-          else throw new Error('Gönderilemedi, tekrar dene.');
+          if (r.ok) return r.json();
+          if (r.status === 429) throw new Error(tr('rateLimited'));
+          throw new Error(tr('sendFailed'));
+        })
+        .then(function (d) {
+          if (d && d.token) rememberSent(d.token, text);
+          el('text').value = '';
+          el('count').textContent = '0';
+          show('done');
         })
         .catch(function (e) {
-          el('error').textContent = e.message || 'Gönderilemedi, tekrar dene.';
+          el('error').textContent = e.message || tr('sendFailed');
           el('error').classList.remove('hidden');
         })
         .finally(function () { el('send').disabled = false; });
     });
 
     el('again').addEventListener('click', function () { show('form'); });
+    el('viewReplies').addEventListener('click', function () { location.hash = 'r'; });
+    el('backLink').addEventListener('click', function (e) { e.preventDefault(); show('form'); });
   </script>
 </body>
 </html>

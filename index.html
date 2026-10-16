@@ -75,6 +75,21 @@
     .replyLabel { color: #b8aeff; font-size: 11px; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 4px; }
     .replyText { color: #f2f2f7; font-size: 14px; line-height: 1.5; }
     .pending { color: #55555f; font-size: 12px; margin-top: 10px; }
+    .chipsLabel { color: #55555f; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; margin: 0 0 8px; text-align: left; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+    .chip {
+      width: auto; background: #24243a; color: #b8aeff; border: 1px solid #33334d;
+      border-radius: 999px; padding: 8px 12px; font-size: 13px; font-weight: 600; text-align: left;
+    }
+    .cta {
+      display: block; background: #7c6bf2; color: #fff; text-decoration: none;
+      border-radius: 14px; padding: 15px 18px; font-size: 16px; font-weight: 700;
+    }
+    .ctaSub { color: #9a9aa5; font-size: 12px; line-height: 1.5; margin: 8px 0 18px; }
+    .secondary {
+      width: 100%; background: #24243a; color: #b8aeff; border: 1px solid #7c6bf2;
+      border-radius: 14px; padding: 13px; font-size: 15px; font-weight: 700; margin-top: 10px;
+    }
   </style>
 </head>
 <body>
@@ -92,22 +107,25 @@
       <img id="avatar" class="avatar" alt="" />
       <h1 id="nickname"></h1>
       <p class="sub" data-i18n-html="formSub"></p>
+      <p class="chipsLabel" data-i18n="chipsLabel"></p>
+      <div id="chips" class="chips"></div>
       <textarea id="text" maxlength="500" data-i18n-placeholder="placeholder"></textarea>
       <div class="count"><span id="count">0</span>/500</div>
       <button id="send" data-i18n="send"></button>
       <div id="error" class="error hidden"></div>
       <p class="hint" data-i18n="hint"></p>
       <a class="repliesLink" href="#r" data-i18n="myMessagesLink"></a>
+      <a class="repliesLink" id="footerCta" href="https://play.google.com/store/apps/details?id=com.anonconnect.app&referrer=utm_source%3Dinbox%26utm_medium%3Dweb%26utm_campaign%3Dform" data-i18n="ctaOpen"></a>
     </div>
 
     <div id="done" class="done hidden">
       <h2 data-i18n="doneTitle"></h2>
       <p data-i18n-html="doneBody"></p>
-      <button class="store" id="viewReplies" style="border:0;" data-i18n="waitReply"></button>
-      <br />
+      <a class="cta" id="doneCta" href="https://play.google.com/store/apps/details?id=com.anonconnect.app&referrer=utm_source%3Dinbox%26utm_medium%3Dweb%26utm_campaign%3Dsender_done" data-i18n="ctaOpen"></a>
+      <p class="ctaSub" data-i18n="ctaSub"></p>
+      <button class="secondary" id="copyLink" data-i18n="saveLink"></button>
+      <button class="secondary" id="viewReplies" data-i18n="waitReply"></button>
       <button class="again" id="again" data-i18n="again"></button>
-      <br />
-      <a class="repliesLink" href="https://play.google.com/store/apps/details?id=com.anonconnect.app" data-i18n="download"></a>
     </div>
 
     <div id="replies" class="hidden">
@@ -126,16 +144,21 @@
         title: 'Strangr — Anonim mesaj gönder',
         notFoundTitle: 'Link bulunamadı',
         notFoundBody: 'Bu anonim mesaj linki geçersiz ya da kapatılmış.',
-        formSub: 'Sana anonim bir mesaj bırakabilirsin.<br />Kim olduğun asla görünmez.',
-        placeholder: 'Mesajını yaz...',
+        formSub: 'Ona anonim bir soru sor, itiraf et ya da bir şey söyle.<br />Kim olduğun asla görünmez.',
+        placeholder: 'Sorunu yaz...',
+        chipsLabel: 'FİKİR LAZIM MI?',
+        chips: ['Hakkımda ne düşünüyorsun?', 'Bir itirafın var mı?', 'En büyük korkun ne?', 'En utanç verici anın neydi?', 'Bana bir tavsiyen var mı?'],
+        ctaOpen: 'Sen de kendi soru kutunu aç →',
+        ctaSub: "Strangr'ı indir, linkini story'ne koy; herkes sana anonim yazsın.",
+        saveLink: 'Cevap linkimi kopyala',
+        copied: 'Kopyalandı ✓',
         send: 'Anonim Gönder',
         hint: 'Gönderdiğin mesaj tamamen anonimdir. Hakaret, tehdit ve yasa dışı içerik moderasyona bildirilebilir.',
         myMessagesLink: 'Daha önce gönderdiğim mesajlar →',
         doneTitle: '📮 İletildi!',
-        doneBody: 'Mesajın anonim olarak ulaştı.<br />Cevap gelirse bu sayfadan (aynı tarayıcıda) görebilirsin — hesap açmana gerek yok.',
-        waitReply: 'Cevabımı Bekle',
+        doneBody: 'Mesajın anonim olarak ulaştı.<br />Cevap gelirse bu sayfadan görebilirsin. Başka bir tarayıcıdan bakacaksan önce cevap linkini kopyala — hesap açmana gerek yok.',
+        waitReply: 'Cevapları Gör',
         again: 'Bir mesaj daha gönder',
-        download: "Strangr'ı indir, kendi anonim linkini oluştur →",
         repliesTitle: 'Gönderdiğim Mesajlar',
         repliesSub: 'Bu tarayıcıdan gönderdiğin mesajlar ve cevapları (varsa) — kimliğin hiçbir zaman görünmez.',
         back: '← Yeni mesaj gönder',
@@ -150,16 +173,21 @@
         title: 'Strangr — Send an anonymous message',
         notFoundTitle: 'Link not found',
         notFoundBody: 'This anonymous message link is invalid or has been turned off.',
-        formSub: 'You can leave them an anonymous message.<br />Who you are is never shown.',
-        placeholder: 'Write your message...',
+        formSub: 'Ask them anything, confess, or say something.<br />Who you are is never shown.',
+        placeholder: 'Write your question...',
+        chipsLabel: 'NEED IDEAS?',
+        chips: ['What do you think of me?', 'Got a confession?', "What's your biggest fear?", 'Most embarrassing moment?', 'Any advice for me?'],
+        ctaOpen: 'Get your own question box →',
+        ctaSub: 'Install Strangr, put your link in your story and let anyone message you anonymously.',
+        saveLink: 'Copy my reply link',
+        copied: 'Copied ✓',
         send: 'Send Anonymously',
         hint: 'Your message is completely anonymous. Harassment, threats and illegal content can be reported to moderation.',
         myMessagesLink: 'Messages I sent before →',
         doneTitle: '📮 Delivered!',
-        doneBody: "Your message arrived anonymously.<br />If they reply, you'll see it on this page (in the same browser) — no account needed.",
-        waitReply: 'Wait for My Reply',
+        doneBody: "Your message arrived anonymously.<br />If they reply, you'll see it on this page. Checking from another browser? Copy your reply link first — no account needed.",
+        waitReply: 'See Replies',
         again: 'Send another message',
-        download: 'Get Strangr and create your own anonymous link →',
         repliesTitle: 'Messages I Sent',
         repliesSub: 'Messages you sent from this browser and their replies (if any) — your identity is never shown.',
         back: '← Send a new message',
@@ -184,6 +212,7 @@
     var slug = decodeURIComponent(hash);
 
     var el = function (id) { return document.getElementById(id); };
+    var lastToken = null;
     function show(id) {
       ['loading', 'notfound', 'form', 'done', 'replies'].forEach(function (s) {
         el(s).classList.toggle('hidden', s !== id);
@@ -258,7 +287,40 @@
 
     window.addEventListener('hashchange', function () { location.reload(); });
 
-    if (hash === 'r') {
+    function buildChips() {
+      var box = el('chips');
+      tr('chips').forEach(function (q) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'chip';
+        b.textContent = q;
+        b.addEventListener('click', function () {
+          el('text').value = q;
+          el('count').textContent = String(q.length);
+          el('text').focus();
+        });
+        box.appendChild(b);
+      });
+    }
+    buildChips();
+
+    if (hash.indexOf('r=') === 0) {
+      // Portable reply link (#r=<token>): opens in any browser, then lands in
+      // this browser's own list so it keeps showing under "Messages I sent".
+      var linkToken = hash.slice(2);
+      fetch(FN + '?token=' + encodeURIComponent(linkToken))
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (d) {
+          if (!d || !d.text) { show('notfound'); return; }
+          if (!loadSent().some(function (i) { return i.token === linkToken; })) {
+            rememberSent(linkToken, d.text);
+          }
+          history.replaceState(null, '', '#r');
+          show('replies');
+          renderReplies();
+        })
+        .catch(function () { show('notfound'); });
+    } else if (hash === 'r') {
       show('replies');
       renderReplies();
     } else if (!slug) {
@@ -295,7 +357,7 @@
           throw new Error(tr('sendFailed'));
         })
         .then(function (d) {
-          if (d && d.token) rememberSent(d.token, text);
+          if (d && d.token) { rememberSent(d.token, text); lastToken = d.token; }
           el('text').value = '';
           el('count').textContent = '0';
           show('done');
@@ -308,6 +370,20 @@
     });
 
     el('again').addEventListener('click', function () { show('form'); });
+    el('copyLink').addEventListener('click', function () {
+      if (!lastToken) return;
+      var link = location.origin + '/#r=' + lastToken;
+      var btn = el('copyLink');
+      var done = function () {
+        btn.textContent = tr('copied');
+        setTimeout(function () { btn.textContent = tr('saveLink'); }, 2000);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(link).then(done, function () { window.prompt('', link); });
+      } else {
+        window.prompt('', link);
+      }
+    });
     el('viewReplies').addEventListener('click', function () { location.hash = 'r'; });
     el('backLink').addEventListener('click', function (e) { e.preventDefault(); show('form'); });
   </script>
